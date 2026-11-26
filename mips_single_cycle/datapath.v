@@ -8,6 +8,7 @@ module data_path(
 	DataC,
 	RegWrite,
 	AluSrc,
+	ZeroExtend,
 	Branch,
 	MemRead,
 	MemWrite,
@@ -20,14 +21,15 @@ module data_path(
 	);
 
 	input 					clk,rst;
-	input       [1:0]		RegDst,Jmp;
-	input 					DataC,RegWrite,AluSrc,Branch,MemRead,MemWrite,MemtoReg;
+	input       [1:0]		RegDst,Jmp,DataC;
+	input 					RegWrite,AluSrc,ZeroExtend,Branch,MemRead,MemWrite,MemtoReg;
 	input       [2:0]		AluOperation;
 	output reg  [5:0] 		func,opcode;
 	output wire [31:0] 		out1,out2;
 
 	wire        [31:0] 		in_pc,out_pc,instruction,write_data_reg,read_data1_reg,read_data2_reg,pc_adder,mem_read_data,
-							inst_extended,alu_input2,alu_result,read_data_mem,shifted_inst_extended,out_adder2,out_branch;
+							inst_extended,alu_immediate,alu_input2,alu_result,read_data_mem,
+							shifted_inst_extended,out_adder2,out_branch;
 	wire 		[4:0] 		write_reg;
 	wire 		[25:0] 		shl2_inst;
 	wire 					and_z_b,zero;
@@ -56,9 +58,11 @@ module data_path(
 
 	assign and_z_b=zero & Branch;
 
-	mux2_to_1 #32 mux2_reg_file(.clk(clk),.data1(mem_read_data),.data2(pc_adder),.sel(DataC),.out(write_data_reg));
+	mux3_to_1 #32 mux_writeback(.clk(clk),.data1(mem_read_data),.data2(pc_adder),
+	                           .data3({instruction[15:0],16'b0}),.sel(DataC),.out(write_data_reg));
 
-	mux2_to_1 #32 alu_mux(.clk(clk),.data1(read_data2_reg),.data2(inst_extended),.sel(AluSrc),.out(alu_input2));
+	assign alu_immediate = ZeroExtend ? {16'b0,instruction[15:0]} : inst_extended;
+	mux2_to_1 #32 alu_mux(.clk(clk),.data1(read_data2_reg),.data2(alu_immediate),.sel(AluSrc),.out(alu_input2));
 
 	mux2_to_1 #32 mux_of_mem(.clk(clk),.data1(alu_result),.data2(read_data_mem),.sel(MemtoReg),.out(mem_read_data));
 
