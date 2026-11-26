@@ -36,6 +36,7 @@ module controller(
 				`RT: begin
 					RegDst=2'b01;
 					Regwrite=1;
+					// The starter uses function bits [2:0] as its R-type ALU selector.
 					AluOperation=func[2:0];
 				 end
 				`addi: begin

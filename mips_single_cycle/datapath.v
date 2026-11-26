@@ -39,7 +39,8 @@ module data_path(
 
 	adder adder2(.clk(clk),.data1(shifted_inst_extended),.data2(pc_adder),.sum(out_adder2));
 
-	alu ALU(.clk(clk),.data1(read_data1_reg),.data2(alu_input2),.alu_op(AluOperation),.alu_result(alu_result),.zero_flag(zero));
+	alu ALU(.clk(clk),.data1(read_data1_reg),.data2(alu_input2),.alu_op(AluOperation),
+	        .shamt(instruction[10:6]),.alu_result(alu_result),.zero_flag(zero));
 
 	inst_memory InstMem(.clk(clk),.rst(rst),.adr(out_pc),.instruction(instruction));
 

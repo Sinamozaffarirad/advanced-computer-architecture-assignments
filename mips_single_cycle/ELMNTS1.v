@@ -20,9 +20,10 @@ module shl2 #(parameter num_bit)(input clk,input [num_bit-1:0]adr, output [num_b
 	assign sh_adr=adr<<2;
 endmodule
 
-module alu(input clk,input [31:0]data1,data2, input [2:0]alu_op, output reg[31:0]alu_result, output zero_flag);
+module alu(input clk,input [31:0]data1,data2, input [2:0]alu_op, input [4:0]shamt,
+           output reg[31:0]alu_result, output zero_flag);
 	
-	always@(alu_op,data1,data2) begin
+	always @(alu_op, data1, data2, shamt) begin
 		alu_result=32'b0;
 		case (alu_op)
 			3'b000: alu_result=data1 & data2;
@@ -30,6 +31,9 @@ module alu(input clk,input [31:0]data1,data2, input [2:0]alu_op, output reg[31:0
 			3'b010:	alu_result=data1 + data2;
 			3'b011:	alu_result=data1 - data2;
 			3'b100: alu_result=(data1<data2) ? 32'b1:32'b0;
+			3'b101: alu_result=~(data1 | data2);
+			3'b110: alu_result=data2 << shamt;
+			3'b111: alu_result=$signed(data2) >>> shamt;
 		endcase
 	end
 	assign zero_flag=(alu_result==32'b0) ? 1'b1:1'b0;
